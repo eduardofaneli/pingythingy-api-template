@@ -1,59 +1,60 @@
-# Código Fonte do Template PingyThingy Secure API (NarebaCoder)
+# PingyThingy Secure API Template Source Code (NarebaCoder)
 
-Este repositório contém o código-fonte para o template `dotnet new` **NarebaCoder.PingyThingy.Api.Template**.
+This repository contains the source code for the `dotnet new` template **NarebaCoder.PingyThingy.Api.Template**.
 
-O template visa fornecer uma base sólida e segura para a criação de APIs .NET 9, incorporando boas práticas de segurança e observabilidade.
+The template aims to provide a solid and secure foundation for creating .NET 9 APIs, incorporating security and observability best practices.
 
-## Pacote NuGet
+## NuGet Package
 
-O template compilado e pronto para uso está disponível como um pacote NuGet:
+The compiled and ready-to-use template is available as a NuGet package:
 
 [![NuGet version](https://img.shields.io/nuget/v/NarebaCoder.PingyThingy.Api.Template.svg)](https://www.nuget.org/packages/NarebaCoder.PingyThingy.Api.Template)
 
 **Link:** [https://www.nuget.org/packages/NarebaCoder.PingyThingy.Api.Template](https://www.nuget.org/packages/NarebaCoder.PingyThingy.Api.Template)
 
-## Como Usar o Template
+## How to Use the Template
 
-1.  **Instale o Template:**
+1.  **Install the Template:**
     ```powershell
     dotnet new install NarebaCoder.PingyThingy.Api.Template
     ```
 
-2.  **Crie um Novo Projeto:**
+2.  **Create a New Project:**
     ```powershell
-    dotnet new narebacoder-pingyapi -n SeuNovoNomeDeProjeto
+    dotnet new narebacoder-pingyapi -n YourNewProjectName
     ```
-    (Substitua `SeuNovoNomeDeProjeto` pelo nome desejado para sua API).
+    (Replace `YourNewProjectName` with the desired name for your API).
 
-3.  **Siga as Instruções:** Consulte o `README.md` gerado dentro do seu novo projeto para configurações adicionais (como User Secrets).
+3.  **Follow Instructions:** Refer to the `README.md` generated inside your new project for additional configurations (like User Secrets).
 
-## Estrutura do Repositório
+## Repository Structure
 
-*   `./PingyThingy.Template/`: Contém o projeto `.csproj` para empacotar o template como um pacote NuGet.
-    *   `./PingyThingy.Template/README.md`: O README específico que é exibido na página do pacote NuGet.
-    *   `./PingyThingy.Template/content/`: Contém todo o código-fonte real que será incluído no template (a solução .NET, Dockerfiles, etc.).
-*   `./README.md`: Este arquivo, explicando o propósito do repositório.
-*   `.gitignore`: Arquivo padrão para ignorar arquivos desnecessários do Git.
+*   `./PingyThingy.Template/`: Contains the `.csproj` project to package the template as a NuGet package.
+    *   `./PingyThingy.Template/README.md`: The specific README displayed on the NuGet package page.
+    *   `./PingyThingy.Template/content/`: Contains all the actual source code that will be included in the template (the .NET solution, Dockerfiles, etc.).
+*   `./README.md`: This file, explaining the purpose of the repository.
+*   `.gitignore`: Standard file to ignore unnecessary Git files.
+*   `.editorconfig`: Defines coding styles and line endings (LF).
 
-## Construindo o Template a Partir do Código Fonte
+## Building the Template from Source
 
-Se você clonou este repositório e deseja construir e instalar o pacote `.nupkg` localmente:
+If you cloned this repository and want to build and install the `.nupkg` package locally:
 
-1.  Navegue até a pasta `PingyThingy.Template`:
+1.  Navigate to the `PingyThingy.Template` folder:
     ```powershell
     cd PingyThingy.Template
     ```
-2.  Execute o comando `dotnet pack`:
+2.  Run the `dotnet pack` command:
     ```powershell
     dotnet pack --configuration Release
     ```
-    Isso gerará o arquivo `.nupkg` dentro de `bin/Release`.
-3.  Instale o pacote localmente:
+    This will generate the `.nupkg` file inside `bin/Release`.
+3.  Install the package locally:
     ```powershell
-    dotnet new install .\bin\Release\NarebaCoder.PingyThingy.Api.Template.<versão>.nupkg
+    dotnet new install .\bin\Release\NarebaCoder.PingyThingy.Api.Template.<version>.nupkg
     ```
-    (Substitua `<versão>` pela versão atual definida no `.csproj`).
+    (Replace `<version>` with the current version defined in the `.csproj`).
 
-## Contribuições
+## Contributions
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir Issues ou Pull Requests.
+Contributions are welcome! Feel free to open Issues or Pull Requests.
