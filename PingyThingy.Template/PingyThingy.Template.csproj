@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Informações do Pacote NuGet -->
+    <PackageType>Template</PackageType>
+    <PackageId>NarebaCoder.PingyThingy.Api.Template</PackageId> <!-- ID único do pacote no NuGet -->
+    <Title>PingyThingy Secure API Template</Title>
+    <Authors>NarebaCoder</Authors> <!-- Seu nome/empresa -->
+    <Description>Template para criar APIs .NET 9 seguras e observáveis, baseadas no projeto PingyThingy.</Description>
+    <PackageTags>dotnet-new;templates;webapi;aspnetcore;security;observability;narebacoder</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression> <!-- Ou a licença que preferir -->
+    <PackageProjectUrl>https://github.com/eduardofaneli/pingythingy-api-template</PackageProjectUrl> <!-- Link para o repositório (opcional) -->
+    <RepositoryUrl>https://github.com/eduardofaneli/pingythingy-api-template.git</RepositoryUrl> <!-- Link para o repositório (opcional) -->
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.0</Version> <!-- Versão inicial do seu template -->
+
+    <!-- Configurações do Template -->
+    <TargetFramework>netstandard2.0</TargetFramework> <!-- Target framework irrelevante para templates -->
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn> <!-- Suprime aviso sobre estrutura não convencional -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Inclui todo o conteúdo da pasta 'content' no pacote, excluindo bin/obj -->
+    <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
+    <!-- Remove a compilação padrão, pois é um pacote de template -->
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>

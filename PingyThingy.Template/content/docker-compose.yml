@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  pingythingy-api:
+    build:
+      context: .
+      dockerfile: src/PingyThingy.Api/Dockerfile
+    container_name: pingythingy-api
+    ports:
+      - "5000:8080" # Map host port 5000 to container port 8080 (HTTP)
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development # Set environment to Development for Swagger etc.
+      - ASPNETCORE_URLS=http://+:8080 # Tell Kestrel to listen only on HTTP port 8080
+      # OpenTelemetry Configuration
+      - OTEL_SERVICE_NAME=PingyThingy.Api # Service name for OTel
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889 # Send OTel data to Aspire Dashboard (using service name and default OTLP port)
+      - OTEL_DOTNET_EXPERIMENTAL_ASPNETCORE_ENABLE_GRPC_INSTRUMENTATION=true # Optional: Enable gRPC instrumentation if needed later
+      - OTEL_DOTNET_EXPERIMENTAL_HTTPCLIENT_INSTRUMENTATION_RECORD_EXCEPTION=true # Optional: Record exceptions in HttpClient spans
+    depends_on:
+      - aspire-dashboard
+    networks:
+      - pingythingy-network
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: aspire-dashboard
+    ports:
+      - "18888:18888" # Expose dashboard UI port
+      - "18889:18889" # Expose OTLP gRPC port (used by OTEL_EXPORTER_OTLP_ENDPOINT)
+      # Port 4317 is also exposed by the image for OTLP HTTP, but we use gRPC (18889) here
+    networks:
+      - pingythingy-network
+
+networks:
+  pingythingy-network:
+    driver: bridge
+

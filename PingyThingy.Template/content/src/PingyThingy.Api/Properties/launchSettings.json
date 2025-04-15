@@ -1,0 +1,31 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5001",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OTEL_SERVICE_NAME": "PingyThingy.Api.Local",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:18889",
+        "OTEL_DOTNET_EXPERIMENTAL_ASPNETCORE_ENABLE_GRPC_INSTRUMENTATION": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_HTTPCLIENT_INSTRUMENTATION_RECORD_EXCEPTION": "true"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://localhost:7297;http://localhost:5001",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OTEL_SERVICE_NAME": "PingyThingy.Api.Local",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:18889",
+        "OTEL_DOTNET_EXPERIMENTAL_ASPNETCORE_ENABLE_GRPC_INSTRUMENTATION": "true",
+        "OTEL_DOTNET_EXPERIMENTAL_HTTPCLIENT_INSTRUMENTATION_RECORD_EXCEPTION": "true"
+      }
+    }
+  }
+}
