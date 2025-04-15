@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/eduardofaneli/pingythingy-api-template</PackageProjectUrl> <!-- Link para o repositório (opcional) -->
     <RepositoryUrl>https://github.com/eduardofaneli/pingythingy-api-template.git</RepositoryUrl> <!-- Link para o repositório (opcional) -->
     <RepositoryType>git</RepositoryType>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version> <!-- Increment version for republishing -->
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <TargetFramework>netstandard2.0</TargetFramework>

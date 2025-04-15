@@ -11,14 +11,13 @@ using PingyThingy.Api.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// Add services to the container.
 // AddControllers will automatically discover ErrorsController and DevelopmentController (in Debug)
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<FluentValidationFilter>();
 });
 
-// Configure Telemetry, Security, Rate Limiting, Health Checks, Validation, and CORS
+// Configure common services via extension methods
 builder
     .Services.AddTelemetry(builder)
     .AddSecurity(configuration)
@@ -27,27 +26,20 @@ builder
     .AddValidation()
     .AddCorsPolicy(configuration);
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGenConfigured();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        // Optional: Configure Swagger UI if using separate docs
-        // options.SwaggerEndpoint("/swagger/v1/swagger.json", "PingyThingy API v1");
-        // options.SwaggerEndpoint("/swagger/dev/swagger.json", "Development");
-    });
+    app.UseSwaggerUI(); // Basic UI setup
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    // UseExceptionHandler will now route to ErrorsController.HandleError
+    // UseExceptionHandler routes errors to the ErrorsController.HandleError endpoint
     app.UseExceptionHandler("/error");
     app.UseHsts();
 }
@@ -55,7 +47,6 @@ else
 app.UseSecurityHeaders();
 app.UseHttpsRedirection();
 
-// --- Configure Middleware Pipeline ---
 app.UseRouting();
 
 app.UseCors("AllowSpecificOrigins");
@@ -65,13 +56,11 @@ app.UseAuthorization();
 
 app.UseRateLimiter();
 
-// Map Controllers will map ErrorsController and DevelopmentController routes
+// Map controllers and apply rate limiting policy
 app.MapControllers().RequireRateLimiting("fixed-by-user");
 
 app.MapHealthChecks("/healthz");
 
-// --- REMOVE Minimal API Endpoints ---
-// The /error endpoint is removed (handled by ErrorsController)
-// The /dev/generate-token endpoint is removed (handled by DevelopmentController in Debug builds)
+// Minimal API endpoints previously here are now handled by controllers
 
 app.Run();

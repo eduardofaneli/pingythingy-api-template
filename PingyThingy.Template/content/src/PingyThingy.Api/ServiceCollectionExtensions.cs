@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddValidation(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<WebhookPayloadValidator>(); // Scans and registers validators
+        services.AddValidatorsFromAssemblyContaining<WebhookPayloadValidator>(); // Scans assembly for FluentValidation validators
         return services;
     }
 
@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
-        // Read allowed origins from configuration, fallback to a default dev origin
+        // Reads allowed origins from "Cors:AllowedOrigins" in appsettings.json
         var allowedOrigins =
             configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
             ?? ["http://localhost:3000"]; // Default for local frontend dev
@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
                 builder =>
                 {
                     builder.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
-                    // Consider .AllowCredentials() if you need cookies/auth headers from browser JS
+                    // Consider .AllowCredentials() if frontend needs to send cookies/auth headers
                 }
             );
         });
@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         WebApplicationBuilder builder
     )
     {
-        // Configure OpenTelemetry
+        // Configures OpenTelemetry for tracing and metrics, exporting via OTLP
         services
             .AddOpenTelemetry()
             .ConfigureResource(resource =>
@@ -58,14 +58,14 @@ public static class ServiceCollectionExtensions
                 tracing
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddOtlpExporter()
+                    .AddOtlpExporter() // Exports to endpoint defined by OTEL_EXPORTER_OTLP_ENDPOINT env var
             )
             .WithMetrics(metrics =>
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddOtlpExporter()
+                    .AddOtlpExporter() // Exports to endpoint defined by OTEL_EXPORTER_OTLP_ENDPOINT env var
             );
 
         return services;
@@ -73,10 +73,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddSecurity(
         this IServiceCollection services,
-        IConfiguration configuration // Inject IConfiguration
+        IConfiguration configuration
     )
     {
-        // --- Add Authentication ---
         services
             .AddAuthentication(options =>
             {
@@ -91,17 +90,18 @@ public static class ServiceCollectionExtensions
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
+                    // Values read from "Jwt:*" section in appsettings.json or environment variables
                     ValidIssuer = configuration["Jwt:Issuer"] ?? "YOUR_ISSUER",
                     ValidAudience = configuration["Jwt:Audience"] ?? "YOUR_AUDIENCE",
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(
+                            // IMPORTANT: Use User Secrets for Jwt:Key in Development!
                             configuration["Jwt:Key"] ?? "YOUR_SUPER_SECRET_KEY_REPLACE_ME"
                         )
                     ),
                 };
             });
 
-        // --- Add Authorization ---
         services.AddAuthorization();
 
         return services;
@@ -109,13 +109,14 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddRateLimitingConfig(
         this IServiceCollection services,
-        IConfiguration configuration // Inject IConfiguration
+        IConfiguration configuration
     )
     {
-        // Read configuration values with defaults
+        // Reads configuration from "RateLimiting:*" sections in appsettings.json
         var fixedByUserOptions = configuration.GetSection("RateLimiting:FixedByUser");
         var globalOptions = configuration.GetSection("RateLimiting:Global");
 
+        // Fallback defaults if configuration is missing
         var fixedPermitLimit = fixedByUserOptions.GetValue<int?>("PermitLimit") ?? 10;
         var fixedWindowSeconds = fixedByUserOptions.GetValue<int?>("WindowSeconds") ?? 10;
         var fixedQueueLimit = fixedByUserOptions.GetValue<int?>("QueueLimit") ?? 0;
@@ -128,6 +129,7 @@ public static class ServiceCollectionExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+            // Policy per user (based on NameIdentifier claim) or host as fallback
             options.AddPolicy(
                 "fixed-by-user",
                 httpContext =>
@@ -141,23 +143,24 @@ public static class ServiceCollectionExtensions
                         partitionKey: partitionKey,
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = fixedPermitLimit, // Use configured value
-                            Window = TimeSpan.FromSeconds(fixedWindowSeconds), // Use configured value
-                            QueueLimit = fixedQueueLimit, // Use configured value
+                            PermitLimit = fixedPermitLimit,
+                            Window = TimeSpan.FromSeconds(fixedWindowSeconds),
+                            QueueLimit = fixedQueueLimit,
                         }
                     );
                 }
             );
 
+            // Global limiter applied to all requests
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
                 httpContext =>
                     RateLimitPartition.GetFixedWindowLimiter(
                         partitionKey: "global",
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = globalPermitLimit, // Use configured value
-                            Window = TimeSpan.FromMinutes(globalWindowMinutes), // Use configured value
-                            QueueLimit = globalQueueLimit, // Use configured value
+                            PermitLimit = globalPermitLimit,
+                            Window = TimeSpan.FromMinutes(globalWindowMinutes),
+                            QueueLimit = globalQueueLimit,
                         }
                     )
             );
@@ -168,25 +171,24 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddHealthCheckConfig(
         this IServiceCollection services,
-        IConfiguration configuration // Inject IConfiguration
+        IConfiguration configuration
     )
     {
         services.AddHealthChecks();
-        // Example using configuration:
-        // .AddNpgSql(configuration.GetConnectionString("DefaultConnection"), name: "database")
-        // .AddUrlGroup(new Uri(configuration["ExternalServices:ApiHealthUrl"]), name: "external-api");
+        // Add specific health checks for dependencies (database, external APIs, etc.) here
+        // Example: .AddNpgSql(configuration.GetConnectionString("DefaultConnection"), name: "database")
         return services;
     }
 
-    // New method for configuring SwaggerGen
+    // Configures SwaggerGen with Bearer Token authentication support
     public static IServiceCollection AddSwaggerGenConfigured(this IServiceCollection services)
     {
         services.AddSwaggerGen(options =>
         {
-            // Define the Swagger document
+            // Define the main Swagger document (Title is replaced by template engine)
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "PingyThingy API", Version = "v1" });
 
-            // Define the BearerAuth security scheme
+            // Define the BearerAuth security scheme for JWT
             options.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
@@ -196,12 +198,12 @@ public static class ServiceCollectionExtensions
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Scheme = "bearer", // Lowercase 'bearer'
+                    Scheme = "bearer", // Standard is lowercase
                     BearerFormat = "JWT",
                 }
             );
 
-            // Make sure Swagger UI requires a Bearer token
+            // Make Swagger UI require a Bearer token globally
             options.AddSecurityRequirement(
                 new OpenApiSecurityRequirement
                 {
@@ -211,15 +213,15 @@ public static class ServiceCollectionExtensions
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer", // Must match the id defined in AddSecurityDefinition
+                                Id = "Bearer", // Matches the AddSecurityDefinition ID
                             },
                         },
-                        Array.Empty<string>() // No specific scopes required for Bearer
+                        Array.Empty<string>() // No specific OAuth2 scopes needed
                     },
                 }
             );
 
-            // Optional: Configure Swagger to potentially separate Development endpoints
+            // Optional: Add a separate document for development-specific endpoints
             // options.SwaggerDoc("dev", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "PingyThingy API - Development", Version = "dev" });
         });
 
